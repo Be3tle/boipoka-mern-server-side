@@ -50,6 +50,28 @@ async function run() {
       const result = await productCollection.insertOne(newBook);
       res.send(result);
     });
+
+    app.put('/books/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedBook = req.body;
+
+      const book = {
+        $set: {
+          title: updatedBook.title,
+          author: updatedBook.author,
+          genre: updatedBook.genre,
+          imgUrl: updatedBook.imgUrl,
+          rating: updatedBook.rating,
+        },
+      };
+
+      // test
+
+      const result = await bookCollection.updateOne(filter, book, options);
+      res.send(result);
+    });
   } finally {
   }
 }
