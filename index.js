@@ -166,6 +166,40 @@ async function run() {
       const result = await borrowCollection.deleteOne(query);
       res.send(result);
     });
+
+    app.patch('/books/:id', async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const updateBook = { $set: req.body };
+
+        const result = await bookCollection.updateOne(query, updateBook);
+
+        if (result.modifiedCount > 0) {
+          res.status(200).send({
+            success: true,
+            message: 'Book quantity updated successfully',
+          });
+        } else {
+          res.status(404).send({
+            success: false,
+            message: 'Book not found or quantity not updated',
+          });
+        }
+      } catch (error) {
+        console.error(error);
+        res
+          .status(500)
+          .send({ success: false, message: 'Internal Server Error' });
+      }
+    });
+
+    app.get('/books/:title', async (req, res) => {
+      const title = req.params.title;
+      const query = { _id: new ObjectId(title) };
+      const result = await bookCollection.findOne(query);
+      res.send(result);
+    });
   } finally {
   }
 }
