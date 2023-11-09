@@ -6,7 +6,16 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      'http://localhost:5173',
+      // 'https://cars-doctor-6c129.web.app',
+      // 'https://cars-doctor-6c129.firebaseapp.com'
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_KEY}@cluster0.bvbzn4c.mongodb.net/?retryWrites=true&w=majority`;
@@ -24,6 +33,7 @@ async function run() {
   try {
     const genreCollection = client.db('boipoka').collection('genre');
     const bookCollection = client.db('boipoka').collection('books');
+    const borrowCollection = client.db('boipoka').collection('borrows');
 
     app.get('/genre', async (req, res) => {
       const cursor = genreCollection.find();
@@ -70,6 +80,31 @@ async function run() {
       // test
 
       const result = await bookCollection.updateOne(filter, book, options);
+      res.send(result);
+    });
+
+    // borrows
+
+    app.get('/borrows', async (req, res) => {
+      let query = {};
+      if (req.query?.email) {
+        query = { email: req.query.email };
+      }
+      const result = await borrowCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.post('/borrows', async (req, res) => {
+      const borrow = req.body;
+      console.log(borrow);
+      const result = await borrowCollection.insertOne(borrow);
+      res.send(result);
+    });
+
+    app.delete('/borrows/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await borrowCollection.deleteOne(query);
       res.send(result);
     });
   } finally {
